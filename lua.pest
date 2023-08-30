@@ -1,7 +1,27 @@
-DOC = _{ ( NUMERAL ~ "\n" )+ }
+DOC = _{ ( VALUE ~ "\n" )+ }
+VALUE = { NUMERAL | QUOTED_STRING }
+
+QUOTED_STRING = _{ QUOTE ~ STRING ~ QUOTE}
+STRING = @{ (ESCAPE | ASCII_ALPHANUMERIC)* }
+ESCAPE = _{ ESCAPE_C | ESCAPE_X | ESCAPE_D }
+ESCAPE_C = _{
+    "\\a" | "\\b" | "\\f" | "\\n" | "\\r" | "\\t" | "\\v" | "\\\\" | "\\'" | "\\\""
+    | ("\\z" ~ (NEWLINE | " ")*)
+}
+ESCAPE_X = _{ "\\x" ~ ASCII_HEX_DIGIT ~ ASCII_HEX_DIGIT }
+ESCAPE_D = _{
+    "\\" ~ (
+        (("0" | "1") ~ ASCII_DIGIT ~ ASCII_DIGIT)
+        | ("2" ~ ("0" | "1" | "2" | "3" | "4") ~ ASCII_DIGIT)
+        | ("25" ~ ("0" | "1" | "2" | "3" | "4" | "5"))
+        | (ASCII_DIGIT ~ ASCII_DIGIT? ~ !ASCII_DIGIT)
+    )
+}
+QUOTE = _{ "\"" }
 
 NUMERAL = { HEX_FLOAT | HEX_INTEGER | FLOAT | INTEGER }
-HEX_FLOAT = {
+
+HEX_FLOAT = @{
     ("0x" | "0X")
     ~ ASCII_HEX_DIGIT+
     ~ ("." ~ ASCII_HEX_DIGIT*)?
