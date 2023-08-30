@@ -1,7 +1,67 @@
-DOC = _{ ( VALUE ~ "\n" )+ }
-VALUE = { NUMERAL | QUOTED_STRING }
+CHUNK = { BLOCK }
+BLOCK = { STAT* ~ RETURN_STATUS? }
+STAT = {
+    ";"
+    | (VAR_LIST ~ "=" ~ EXP_LIST)
+    | FUNCTION_CALL
+    | LABEL
+    | "break"
+    | ("goto" ~ NAME)
+    | ("do" ~ BLOCK ~ "end")
+    | ("while" ~ EXP ~ "do" ~ BLOCK ~ "end")
+    | ("repeat" ~ BLOCK ~ "until" ~ EXP)
+    | ("if" ~ EXP ~ "then" ~ BLOCK ~ ("elseif" ~ EXP ~ "then" ~ BLOCK)* ~ ("else" ~ BLOCK)? ~ "end")
+    | ("for" ~ NAME ~ "=" ~ EXP ~ "," ~ EXP ~ ("," ~ EXP)? ~ "do" ~ BLOCK ~ "end")
+    | ("for" ~ NAME_LIST ~ "in" ~ EXP_LIST ~ "do" ~ BLOCK ~ "end")
+    | ("function" ~ FUNCTION_NAME ~ FUNCTION_BODY)
+    | ("local" ~ FUNCTION_NAME ~ FUNCTION_BODY)
+    | ("local" ~ ATTRIBUTE_NAME_LIST ~ ("=" ~ EXP_LIST)?)
+}
 
-QUOTED_STRING = _{ QUOTE ~ STRING ~ QUOTE}
+ATTRIBUTE_NAME_LIST = { NAME ~ ATTRIB ~ ("," ~ NAME ~ ATTRIB)* }
+RETURN_STATUS = { "return" ~ EXP_LIST? ~ ";" }
+ATTRIB = { "<" ~ NAME ~ ">" }
+LABEL = { "::" ~ NAME ~ "::" }
+FUNCTION_NAME = { NAME ~ ( "." ~ NAME )* ~ ( ":" ~ NAME )? }
+VAR_LIST = { VAR ~ ("," ~ VAR)* }
+EXP_LIST = { EXP ~ ("," ~ EXP)* }
+
+EXP = {
+    "nil" | "false" | "true" | NUMERAL | LITERAL_STRING
+    | "..." // note: valid in vararg parameter lists or vararg function body
+    | FUNCTION_DEF | PREFIX_EXP | TABLE_CONSTRUCTOR
+    | (EXP ~ BINOP ~ EXP)
+    | (UNOP ~ EXP)
+}
+PREFIX_EXP = { VAR | FUNCTION_CALL | ( "(" ~ EXP ~ ")" ) }
+VAR = { NAME | (PREFIX_EXP ~ "[" ~ EXP ~ "]") | (PREFIX_EXP ~ "." ~ NAME) }
+FUNCTION_CALL = { PREFIX_EXP ~ ARGS ~ PREFIX_EXP ~ ":" ~ NAME ~ ARGS }
+
+ARGS  = { "(" ~ EXP_LIST ~ ")" ~ TABLE_CONSTRUCTOR | LITERAL_STRING }
+FUNCTION_DEF = { "function" ~ FUNCTION_BODY }
+FUNCTION_BODY = { "(" ~ PARAM_LIST? ~ ")" ~ BLOCK ~ "end" }
+
+PARAM_LIST = { "..." | (NAME_LIST ~ ("," ~ "...")?) }
+NAME_LIST = { NAME ~ ("," ~ NAME)* }
+
+TABLE_CONSTRUCTOR = { "{" ~ FIELD_LIST ~ "}" }
+FIELD_LIST = { FIELD ~ (FIELD_SEP ~ FIELD)* ~ FIELD_SEP? }
+FIELD_SEP = { "," | ";" }
+FIELD = { ("[" ~ EXP ~ "]" ~ "=" ~ EXP) | (NAME ~ "=" ~ EXP) | EXP }
+
+BINOP = {
+    "+" | "-" | "*" | "/" | "//" | "^" | "%"
+    | "&" | "~" | "|" | ">>" | "<<" | ".."
+    | "<" | "<=" | ">" | ">=" | "==" | "~="
+    | "and" | "or"
+}
+UNOP = { "-" | "not" | "#" | "~" }
+
+NAME = { (ASCII_ALPHA | "_") ~ (ASCII_ALPHA | ASCII_DIGIT | "_")* }
+
+VALUE = { NUMERAL | LITERAL_STRING }
+
+LITERAL_STRING = _{ QUOTE ~ STRING ~ QUOTE}
 STRING = @{ (ESCAPE | ASCII_ALPHANUMERIC)* }
 ESCAPE = _{ ESCAPE_C | ESCAPE_X | ESCAPE_D }
 ESCAPE_C = _{
