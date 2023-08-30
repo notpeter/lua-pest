@@ -19,7 +19,7 @@ STAT = {
 }
 
 ATTRIBUTE_NAME_LIST = { NAME ~ ATTRIB ~ ("," ~ NAME ~ ATTRIB)* }
-RETURN_STATUS = { "return" ~ EXP_LIST? ~ ";" }
+RETURN_STATUS = { "return" ~ EXP_LIST? ~ ";"? }
 ATTRIB = { "<" ~ NAME ~ ">" }
 LABEL = { "::" ~ NAME ~ "::" }
 FUNCTION_NAME = { NAME ~ ( "." ~ NAME )* ~ ( ":" ~ NAME )? }
@@ -29,15 +29,32 @@ EXP_LIST = { EXP ~ ("," ~ EXP)* }
 EXP = {
     "nil" | "false" | "true" | NUMERAL | LITERAL_STRING
     | "..." // note: valid in vararg parameter lists or vararg function body
-    | FUNCTION_DEF | PREFIX_EXP | TABLE_CONSTRUCTOR
-    | (EXP ~ BINOP ~ EXP)
+    | FUNCTION_DEF
+    // | PREFIX_EXP
+    | TABLE_CONSTRUCTOR
+    // | (EXP ~ BINOP ~ EXP)
     | (UNOP ~ EXP)
 }
-PREFIX_EXP = { VAR | FUNCTION_CALL | ( "(" ~ EXP ~ ")" ) }
-VAR = { NAME | (PREFIX_EXP ~ "[" ~ EXP ~ "]") | (PREFIX_EXP ~ "." ~ NAME) }
-FUNCTION_CALL = { PREFIX_EXP ~ ARGS ~ PREFIX_EXP ~ ":" ~ NAME ~ ARGS }
+PREFIX_EXP = {
+    VAR
+    // | FUNCTION_CALL
+    // | ( "(" ~ EXP ~ ")" )
+}
+VAR = {
+    NAME
+    // | (PREFIX_EXP ~ "[" ~ EXP ~ "]")
+    // | (PREFIX_EXP ~ "." ~ NAME)
+}
+FUNCTION_CALL = {
+    (PREFIX_EXP ~ ARGS)
+    | (PREFIX_EXP ~ ":" ~ NAME ~ ARGS)
+}
 
-ARGS  = { "(" ~ EXP_LIST ~ ")" ~ TABLE_CONSTRUCTOR | LITERAL_STRING }
+ARGS  = {
+    ( "(" ~ EXP_LIST? ~ ")" )
+    | TABLE_CONSTRUCTOR
+    | LITERAL_STRING
+}
 FUNCTION_DEF = { "function" ~ FUNCTION_BODY }
 FUNCTION_BODY = { "(" ~ PARAM_LIST? ~ ")" ~ BLOCK ~ "end" }
 
@@ -61,6 +78,8 @@ NAME = { (ASCII_ALPHA | "_") ~ (ASCII_ALPHA | ASCII_DIGIT | "_")* }
 
 VALUE = { NUMERAL | LITERAL_STRING }
 
+// TODO: support long brackets [[ ... ]] [==[ ... ]==] and the like
+// https://www.lua.org/manual/5.4/manual.html#3.1
 LITERAL_STRING = _{ QUOTE ~ STRING ~ QUOTE}
 STRING = @{ (ESCAPE | ASCII_ALPHANUMERIC)* }
 ESCAPE = _{ ESCAPE_C | ESCAPE_X | ESCAPE_D }
@@ -99,8 +118,11 @@ FRACTIONAL_PART = { ("p" | "P") ~ ("+" | "-")? ~ ASCII_DIGIT+ }
 HEX_INTEGER = { ("0x" | "0X") ~ ASCII_HEX_DIGIT+ }
 INTEGER = { ASCII_DIGIT+ }
 
+// This pest.rs magic. https://pest.rs/book/grammars/syntax.html#implicit-whitespace
+WHITESPACE = _{ " " | NEWLINE }
+// COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 
-/*
+/* These are pest.rs built-in rules. Included here for sanity.
 ASCII_DIGIT	        = { '0'..'9' }
 ASCII_NONZERO_DIGIT	= { '1'..'9' }
 ASCII_BIN_DIGIT	    = { '0'..'1' }
