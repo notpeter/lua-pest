@@ -1,5 +1,5 @@
 CHUNK = { BLOCK }
-BLOCK = { STAT* ~ RETURN_STATUS? ~ W}
+BLOCK = { (STAT)* ~ RETURN_STATUS? ~ W}
 STAT = {
     ";"
     | (VAR_LIST ~ W ~ "=" ~ W ~ EXP_LIST)
@@ -21,8 +21,8 @@ STAT = {
     | ("for" ~ X ~ NAME_LIST ~ X ~ "in" ~ X ~ EXP_LIST ~ X ~ "do" ~ X ~ BLOCK ~ X ~ "end")
     | ("local" ~ X ~ ATTRIBUTE_NAME_LIST ~ W ~ ("=" ~ W ~ EXP_LIST)?)
     | ("local" ~ X ~ FUNCTION_NAME ~ W ~ FUNCTION_BODY)
-    | "break" ~ X
-    | FUNCTION_CALL
+    | ("break" ~ X)
+    | (FUNCTION_CALL)
     | LABEL
 }
 
@@ -54,20 +54,22 @@ VAR = {
     // | (PREFIX_EXP ~ "." ~ NAME)
 }
 FUNCTION_CALL = {
-    (PREFIX_EXP ~ ARGS)
-    | (PREFIX_EXP ~ ":" ~ NAME ~ ARGS)
+    (PREFIX_EXP ~ W ~ ARGS ~ W)
+    | (PREFIX_EXP ~ ":" ~ NAME ~ W ~ ARGS ~ W)
 }
 
 ARGS  = {
-    ( "(" ~ W ~ EXP_LIST? ~ W ~ ")" )
-    | TABLE_CONSTRUCTOR
-    | LITERAL_STRING
+    (
+        ( "(" ~ W ~ EXP_LIST? ~ W ~ ")" )
+        | TABLE_CONSTRUCTOR
+        | LITERAL_STRING
+    )
 }
-FUNCTION_DEF = { "function" ~ FUNCTION_BODY }
-FUNCTION_BODY = { "(" ~ W ~ PARAM_LIST? ~ W ~ ")" ~ BLOCK ~ "end"}
+FUNCTION_DEF = { "function" ~ W ~ FUNCTION_BODY }
+FUNCTION_BODY = { "(" ~ W ~ PARAM_LIST? ~ W ~ ")" ~ W ~ BLOCK ~ "end"}
 
-PARAM_LIST = { "..." | (NAME_LIST ~ ("," ~ "...")?) }
-NAME_LIST = { NAME ~ ("," ~ NAME)* }
+PARAM_LIST = {  "..." | (NAME_LIST ~ ("," ~ W ~ "...")?) }
+NAME_LIST = { W ~ NAME ~ (W ~ "," ~ W ~ NAME)* }
 
 TABLE_CONSTRUCTOR = { "{" ~ FIELD_LIST ~ "}" }
 FIELD_LIST = { FIELD ~ (FIELD_SEP ~ FIELD)* ~ FIELD_SEP? }

@@ -1,35 +1,45 @@
-3
-345
-0xff
-0xBEBADA
-3.0
-3.1416
-314.16e-2
-0.31416E1
-34e1
-0x0.1E
-0xA23p-4
-0X1.921FB54442D18P+1
-.333
-0.250
-"a"
-"abc"
-"\n"
-"abc\n"
-"abc\ndef"
-"\123123"
-"\123"
-"\1"
-"\25"
-"\255"
-"poop"
+s = 3
+s = 345
+s = 0xff
+s = 0xBEBADA
+s = 3.0
+s = 3.1416
+s = 314.16e-2
+s = 0.31416E1
+s = 34e1
+s = 0x0.1E
+s = 0xA23p-4
+s = 0X1.921FB54442D18P+1
+s = .333
+s = 0.250
+s = "a"
+s = "abc"
+s = "\n"
+s = "abc\n"
+s = "abc\ndef"
+s = "\123123"
+s = "\123"
+s = "\1"
+s = "\25"
+s = "\255"
+s = "poop"
 print()
 print("poop")
 print(1,2,"poop")
 a=1
-b = 2
+b =2
 poop = "crap"
 c,d=5,6
-print((function()if true then return 1 end end)())
 a=function()print("poop",2,nil)end
+a=function ()print("poop",2,nil) end a()
 function bar() end
+function baz()end
+function baz() end
+a = function()end
+b = 123
+function  baz (
+) print()
+end
+a=function () print("poop",2,nil) end a()
+
+-- print((function()if true then return 1 end end)())
