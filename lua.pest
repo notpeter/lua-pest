@@ -1,30 +1,38 @@
 CHUNK = { BLOCK }
-BLOCK = { STAT* ~ RETURN_STATUS? }
+BLOCK = { STAT* ~ RETURN_STATUS? ~ W}
 STAT = {
     ";"
-    | (VAR_LIST ~ "=" ~ EXP_LIST)
+    | (VAR_LIST ~ W ~ "=" ~ W ~ EXP_LIST)
+    | ("function" ~ X ~ FUNCTION_NAME ~ W ~ FUNCTION_BODY)
+    | ("goto" ~ X ~ NAME)
+    | ("do" ~ X ~ BLOCK ~ X ~ "end")
+    | ("while" ~ X ~ EXP ~ X ~ "do" ~ X ~ BLOCK ~ "end")
+    | ("repeat" ~ X ~ BLOCK ~ X ~ "until" ~ X ~ EXP)
+    | (
+        "if" ~ X ~ EXP ~ X ~ "then" ~ X ~ BLOCK
+        ~ (X ~ "elseif" ~ X ~ EXP ~ "then" ~ X ~ BLOCK)*
+        ~ (X ~ "else" ~ X ~ BLOCK)?
+        ~ X ~ "end"
+    )
+    | (
+        "for" ~ X ~ NAME ~ W ~ "=" ~ W ~ EXP ~ W ~ "," ~ W ~ EXP ~ W
+        ~ ("," ~ W ~ EXP)? ~ X ~ "do" ~ X ~ BLOCK ~ X ~ "end"
+    )
+    | ("for" ~ X ~ NAME_LIST ~ X ~ "in" ~ X ~ EXP_LIST ~ X ~ "do" ~ X ~ BLOCK ~ X ~ "end")
+    | ("local" ~ X ~ ATTRIBUTE_NAME_LIST ~ W ~ ("=" ~ W ~ EXP_LIST)?)
+    | ("local" ~ X ~ FUNCTION_NAME ~ W ~ FUNCTION_BODY)
+    | "break" ~ X
     | FUNCTION_CALL
     | LABEL
-    | "break"
-    | ("goto" ~ NAME)
-    | ("do" ~ BLOCK ~ "end")
-    | ("while" ~ EXP ~ "do" ~ BLOCK ~ "end")
-    | ("repeat" ~ BLOCK ~ "until" ~ EXP)
-    | ("if" ~ EXP ~ "then" ~ BLOCK ~ ("elseif" ~ EXP ~ "then" ~ BLOCK)* ~ ("else" ~ BLOCK)? ~ "end")
-    | ("for" ~ NAME ~ "=" ~ EXP ~ "," ~ EXP ~ ("," ~ EXP)? ~ "do" ~ BLOCK ~ "end")
-    | ("for" ~ NAME_LIST ~ "in" ~ EXP_LIST ~ "do" ~ BLOCK ~ "end")
-    | ("function" ~ FUNCTION_NAME ~ FUNCTION_BODY)
-    | ("local" ~ FUNCTION_NAME ~ FUNCTION_BODY)
-    | ("local" ~ ATTRIBUTE_NAME_LIST ~ ("=" ~ EXP_LIST)?)
 }
 
-ATTRIBUTE_NAME_LIST = { NAME ~ ATTRIB ~ ("," ~ NAME ~ ATTRIB)* }
+ATTRIBUTE_NAME_LIST = { NAME ~ ATTRIB ~ (W ~ "," ~ NAME ~ ATTRIB)* }
 RETURN_STATUS = { "return" ~ EXP_LIST? ~ ";"? }
 ATTRIB = { "<" ~ NAME ~ ">" }
 LABEL = { "::" ~ NAME ~ "::" }
 FUNCTION_NAME = { NAME ~ ( "." ~ NAME )* ~ ( ":" ~ NAME )? }
-VAR_LIST = { VAR ~ ("," ~ VAR)* }
-EXP_LIST = { EXP ~ ("," ~ EXP)* }
+VAR_LIST = { VAR ~ (W ~ "," ~ W ~ VAR)* }
+EXP_LIST = { EXP ~ (W ~ "," ~ W ~ EXP)* }
 
 EXP = {
     "nil" | "false" | "true" | NUMERAL | LITERAL_STRING
@@ -51,12 +59,12 @@ FUNCTION_CALL = {
 }
 
 ARGS  = {
-    ( "(" ~ EXP_LIST? ~ ")" )
+    ( "(" ~ W ~ EXP_LIST? ~ W ~ ")" )
     | TABLE_CONSTRUCTOR
     | LITERAL_STRING
 }
 FUNCTION_DEF = { "function" ~ FUNCTION_BODY }
-FUNCTION_BODY = { "(" ~ PARAM_LIST? ~ ")" ~ BLOCK ~ "end" }
+FUNCTION_BODY = { "(" ~ W ~ PARAM_LIST? ~ W ~ ")" ~ BLOCK ~ "end"}
 
 PARAM_LIST = { "..." | (NAME_LIST ~ ("," ~ "...")?) }
 NAME_LIST = { NAME ~ ("," ~ NAME)* }
@@ -75,8 +83,6 @@ BINOP = {
 UNOP = { "-" | "not" | "#" | "~" }
 
 NAME = { (ASCII_ALPHA | "_") ~ (ASCII_ALPHA | ASCII_DIGIT | "_")* }
-
-VALUE = { NUMERAL | LITERAL_STRING }
 
 // TODO: support long brackets [[ ... ]] [==[ ... ]==] and the like
 // https://www.lua.org/manual/5.4/manual.html#3.1
@@ -118,8 +124,11 @@ FRACTIONAL_PART = { ("p" | "P") ~ ("+" | "-")? ~ ASCII_DIGIT+ }
 HEX_INTEGER = { ("0x" | "0X") ~ ASCII_HEX_DIGIT+ }
 INTEGER = { ASCII_DIGIT+ }
 
+W = _{ (" " | "\n")* }
+X = _{ (" " | "\n")+ }
 // This pest.rs magic. https://pest.rs/book/grammars/syntax.html#implicit-whitespace
-WHITESPACE = _{ " " | NEWLINE }
+// WHITESPACE = _{ " " | "\n" }
+// COMMENT = { "--" ~ (!NEWLINE ~ ANY)* ~ NEWLINE?}
 // COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 
 /* These are pest.rs built-in rules. Included here for sanity.

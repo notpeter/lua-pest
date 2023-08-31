@@ -23,3 +23,13 @@
 "\25"
 "\255"
 "poop"
+print()
+print("poop")
+print(1,2,"poop")
+a=1
+b = 2
+poop = "crap"
+c,d=5,6
+print((function()if true then return 1 end end)())
+a=function()print("poop",2,nil)end
+function bar() end
