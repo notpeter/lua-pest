@@ -19,15 +19,15 @@ STAT = {
         ~ ("," ~ W ~ EXP)? ~ X ~ "do" ~ X ~ BLOCK ~ X ~ "end"
     )
     | ("for" ~ X ~ NAME_LIST ~ X ~ "in" ~ X ~ EXP_LIST ~ X ~ "do" ~ X ~ BLOCK ~ X ~ "end")
+    | ("local" ~ X ~ "function" ~ W ~ FUNCTION_NAME ~ W ~ FUNCTION_BODY)
     | ("local" ~ X ~ ATTRIBUTE_NAME_LIST ~ W ~ ("=" ~ W ~ EXP_LIST)?)
-    | ("local" ~ X ~ FUNCTION_NAME ~ W ~ FUNCTION_BODY)
     | ("break" ~ X)
     | (FUNCTION_CALL)
     | LABEL
 }
 
-ATTRIBUTE_NAME_LIST = { NAME ~ ATTRIB ~ (W ~ "," ~ NAME ~ ATTRIB)* }
-RETURN_STATUS = { "return" ~ EXP_LIST? ~ ";"? }
+ATTRIBUTE_NAME_LIST = { NAME ~ W ~ ATTRIB? ~ (W ~ "," ~ NAME ~ W ~ ATTRIB?)* }
+RETURN_STATUS = { "return" ~ W ~ EXP_LIST? ~ W ~ ";"? }
 ATTRIB = { "<" ~ NAME ~ ">" }
 LABEL = { "::" ~ NAME ~ "::" }
 FUNCTION_NAME = { NAME ~ ( "." ~ NAME )* ~ ( ":" ~ NAME )? }
